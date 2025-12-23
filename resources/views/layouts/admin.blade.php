@@ -1,7 +1,7 @@
 {{-- ================================================
      FILE: resources/views/layouts/admin.blade.php
      FUNGSI: Master layout untuk halaman admin
-     ================================================ --}}
+================================================ --}}
 
 <!DOCTYPE html>
 <html lang="id">
@@ -10,15 +10,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Dashboard') - Admin Panel</title>
+    <title>@yield('title') - Admin Panel</title>
 
-    {{-- Google Fonts --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    {{-- Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- Custom Styles --}}
     <style>
         .sidebar {
             min-height: 100vh;
@@ -40,7 +36,6 @@
             width: 24px;
         }
     </style>
-
     @stack('styles')
 </head>
 <body class="bg-light">
@@ -83,8 +78,8 @@
                         <a href="{{ route('admin.orders.index') }}"
                            class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                             <i class="bi bi-receipt me-2"></i> Pesanan
-                            {{-- Badge pendingCount --}}
-                            @if(!empty($pendingCount) && $pendingCount > 0)
+                            {{-- Badge pending orders --}}
+                            @if(isset($pendingCount) && $pendingCount > 0)
                                 <span class="badge bg-warning text-dark ms-auto">{{ $pendingCount }}</span>
                             @endif
                         </a>
@@ -97,13 +92,12 @@
                         </a>
                     </li>
 
-                    {{-- Section Laporan --}}
                     <li class="nav-item mt-3">
                         <span class="nav-link text-muted small text-uppercase">Laporan</span>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.reports.sales') }}"
+                        <a href="{{ route('admin.reports.sales') ?? '#' }}"
                            class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                             <i class="bi bi-graph-up me-2"></i> Laporan Penjualan
                         </a>
@@ -114,10 +108,10 @@
             {{-- User Info --}}
             <div class="p-3 border-top border-secondary">
                 <div class="d-flex align-items-center text-white">
-                    <img src="{{ auth()->user()->avatar_url ?? 'https://via.placeholder.com/36' }}"
+                    <img src="{{ auth()->user()->avatar_url }}"
                          class="rounded-circle me-2" width="36" height="36" alt="Avatar">
                     <div class="flex-grow-1">
-                        <div class="small fw-medium">{{ auth()->user()->name ?? 'Admin' }}</div>
+                        <div class="small fw-medium">{{ auth()->user()->name }}</div>
                         <div class="small text-muted">Administrator</div>
                     </div>
                 </div>

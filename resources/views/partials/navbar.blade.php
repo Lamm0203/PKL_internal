@@ -6,9 +6,9 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div class="container">
         {{-- Logo & Brand --}}
-        <a class="navbar-brand text-primary" href="{{ route('home') }}">
+        <a class="navbar-brand text-secondary" href="{{ route('home') }}">
             <i class="bi bi-bag-heart-fill me-2"></i>
-            TokoOnline
+            Toko Domba
         </a>
 
         {{-- Mobile Toggle --}}
@@ -48,9 +48,12 @@
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{{ route('wishlist.index') }}">
                             <i class="bi bi-heart"></i>
-                            @if(auth()->user()->wishlists()->count() > 0)
+                            @php
+                                $wishlistCount = auth()->user()->wishlists()->count();
+                            @endphp
+                            @if($wishlistCount > 0)
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                    {{ auth()->user()->wishlists()->count() }}
+                                    {{ $wishlistCount }}
                                 </span>
                             @endif
                         </a>
@@ -61,7 +64,8 @@
                         <a class="nav-link position-relative" href="{{ route('cart.index') }}">
                             <i class="bi bi-cart3"></i>
                             @php
-                                $cartCount = auth()->user()->cart?->items()->count() ?? 0;
+                                // Hitung jumlah item di cart (jumlah record)
+                                $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count();
                             @endphp
                             @if($cartCount > 0)
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.6rem;">
@@ -88,11 +92,7 @@
                                     <i class="bi bi-person me-2"></i> Profil Saya
                                 </a>
                             </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('orders.index') }}">
-                                    <i class="bi bi-bag me-2"></i> Pesanan Saya
-                                </a>
-                            </li>
+                            
                             @if(auth()->user()->isAdmin())
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

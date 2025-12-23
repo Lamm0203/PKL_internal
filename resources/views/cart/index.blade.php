@@ -1,9 +1,4 @@
-{{-- ================================================
-     FILE: resources/views/cart/index.blade.php
-     FUNGSI: Halaman keranjang belanja
-     ================================================ --}}
-
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Keranjang Belanja')
 
@@ -13,7 +8,7 @@
         <i class="bi bi-cart3 me-2"></i>Keranjang Belanja
     </h2>
 
-    @if($cart && $cart->items->count())
+    @if($carts->count())
         <div class="row">
             {{-- Cart Items --}}
             <div class="col-lg-8 mb-4">
@@ -30,56 +25,74 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($cart->items as $item)
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="{{ $item->product->image_url }}"
-                                                     class="rounded me-3"
-                                                     width="60" height="60"
-                                                     style="object-fit: cover;">
-                                                <div>
-                                                    <a href="{{ route('catalog.show', $item->product->slug) }}"
-                                                       class="text-decoration-none text-dark fw-medium">
-                                                        {{ Str::limit($item->product->name, 40) }}
-                                                    </a>
-                                                    <div class="small text-muted">
-                                                        {{ $item->product->category->name }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="text-center align-middle">
-                                            {{ $item->product->formatted_price }}
-                                        </td>
-                                        <td class="text-center align-middle">
-                                            <form action="{{ route('cart.update', $item->id) }}" method="POST"
-                                                  class="d-inline-flex align-items-center">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="number" name="quantity"
-                                                       value="{{ $item->quantity }}"
-                                                       min="1" max="{{ $item->product->stock }}"
-                                                       class="form-control form-control-sm text-center"
-                                                       style="width: 70px;"
-                                                       onchange="this.form.submit()">
-                                            </form>
-                                        </td>
-                                        <td class="text-end align-middle fw-bold">
-                                            Rp {{ number_format($item->subtotal, 0, ',', '.') }}
-                                        </td>
-                                        <td class="align-middle">
-                                            <form action="{{ route('cart.remove', $item->id) }}" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('Hapus item ini?')">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                @php
+                                    $total = 0;
+                                    $totalQty = 0;
+                                @endphp
+
+                                @foreach($carts as $cart)
+    @if($cart->product)
+        @php
+            $subtotal = $cart->product->price * $cart->qty;
+            $total += $subtotal;
+            $totalQty += $cart->qty;
+        @endphp
+
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    @if($cart->product->primaryImage)
+                        <img src="{{ asset('storage/' . $cart->product->primaryImage->path) }}"
+                             class="rounded me-3"
+                             width="60" height="60"
+                             style="object-fit: cover;">
+                    @endif
+                    <div>
+                        <a href="{{ route('catalog.show', $cart->product->slug) }}"
+                           class="text-decoration-none text-dark fw-medium">
+                            {{ Str::limit($cart->product->name, 40) }}
+                        </a>
+                    </div>
+                </div>
+            </td>
+
+            <td class="text-center align-middle">
+                Rp {{ number_format($cart->product->price, 0, ',', '.') }}
+            </td>
+
+            <td class="text-center align-middle">
+                <form action="{{ route('cart.update', $cart->id) }}" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <input type="number"
+                           name="quantity"
+                           value="{{ $cart->qty }}"
+                           min="1"
+                           class="form-control form-control-sm text-center"
+                           style="width: 70px;"
+                           onchange="this.form.submit()">
+                </form>
+            </td>
+
+            <td class="text-end align-middle fw-bold">
+                Rp {{ number_format($subtotal, 0, ',', '.') }}
+            </td>
+
+            <td class="align-middle">
+                <form action="{{ route('cart.remove', $cart->id) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-danger"
+                            onclick="return confirm('Hapus item ini?')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+    @endif
+@endforeach
+
                             </tbody>
                         </table>
                     </div>
@@ -94,14 +107,14 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Total Harga ({{ $cart->items->sum('quantity') }} barang)</span>
-                            <span>Rp {{ number_format($cart->items->sum('subtotal'), 0, ',', '.') }}</span>
+                            <span>Total Harga ({{ $totalQty }} barang)</span>
+                            <span>Rp {{ number_format($total, 0, ',', '.') }}</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <span class="fw-bold">Total</span>
                             <span class="fw-bold text-primary fs-5">
-                                Rp {{ number_format($cart->items->sum('subtotal'), 0, ',', '.') }}
+                                Rp {{ number_format($total, 0, ',', '.') }}
                             </span>
                         </div>
                         <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100 btn-lg">
